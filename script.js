@@ -5,40 +5,93 @@ const ctx = c.getContext("2d");
 c.width = 450;
 c.height = 800;
 
-const jumpInitialVelocity = -1.25;
-const gravity = 0.005;
+const jumpInitialVelocity = -0.9;
+const gravity = 0.004;
 const birdRadius = 20;
-const birdX = c.width / 2;
+const birdX = (c.width - birdRadius) / 2;
 const pipeSpeed = -0.2;
 const pipeWidth = 86;
-const pipeGap = 285;
+const pipeGap = 147;
 const bottomDiagonalWidth = 10;
 const groundY = 624;
+const pipeTipHeight = 38;
 let spaceKeyIsPressed = false;
 let hasJumped = false;
 
 const pipeBodyColors = [
-    ["#81a94f", "#80a158", "#656450", "#5d5b47", 2],
-    ["#b1ec67", "#b1e56c", "#797f58", "#71714d", 2],
-    ["#d8fa84", "#d7f983", "#8b835f", "#7e735a", 2],
-    ["#c3f175", "#c1ea74", "#82815b", "#767356", 2],
-    ["#9de85a", "#9adf5b", "#717b4f", "#6b6d49", 8],
-    ["#83ce40", "#85cb46", "#687548", "#646642", 2],
-    ["#7ac537", "#77bd38", "#616e41", "#60623d", 2],
-    ["#94df51", "#90d651", "#6d7a4e", "#6a6c49", 4],
-    ["#75c02d", "#78be39", "#626f42", "#5f613d", 2],
-    ["#74bf2e", "#74bb32", "#606d40", "#5f623b", 28],
-    ["#73be2e", "#72bb30", "#5f6d3f", "#5e623b", 2],
-    ["#74c42e", "#72be31", "#5f6f3e", "#5a643d", 2],
-    ["#6eb12a", "#6ead32", "#5e663f", "#585c3b", 2],
-    ["#517f22", "#517e20", "#52503a", "#524d36", 2],
-    ["#639b26", "#62972e", "#585c3d", "#585439", 2],
-    ["#71bd2e", "#73bb36", "#5c6a3e", "#5e5f3b", 2],
-    ["#5c9222", "#618e27", "#5a5c3d", "#545337", 2],
-    ["#547822", "#527523", "#53513c", "#524b39", 2],
-    ["#558821", "#588226", "#55543e", "#575037", 2]
+    ["#81a94f", 2],
+    ["#b1ec67", 2],
+    ["#d8fa84", 2],
+    ["#c3f175", 2],
+    ["#9de85a", 8],
+    ["#83ce40", 2],
+    ["#7ac537", 2],
+    ["#94df51", 4],
+    ["#75c02d", 2],
+    ["#74bf2e", 28],
+    ["#73be2e", 2],
+    ["#74c42e", 2],
+    ["#6eb12a", 2],
+    ["#517f22", 2],
+    ["#639b26", 2],
+    ["#71bd2e", 2],
+    ["#5c9222", 2],
+    ["#547822", 2],
+    ["white", 2]
 ];
-
+const pipeTipColors = [
+    ["#6f8641", 2],
+    ["#9de757", 2],
+    ["#d1f47c", 2],
+    ["#cdf67c", 2],
+    ["#aae863", 2],
+    ["#9be75a", 2],
+    ["#97e352", 2],
+    ["#7ec938", 2],
+    ["#80cb3a", 2],
+    ["#97e251", 2],
+    ["#85d040", 2],
+    ["#75c12f", 2],
+    ["#75c12c", 2],
+    ["#74bf2e", 34],
+    ["#73be2d", 2],
+    ["#75c030", 2],
+    ["#74c22d", 2],
+    ["#63a423", 2],
+    ["#568120", 2],
+    ["#6bab29", 2],
+    ["#6fb82e", 2],
+    ["#578820", 2],
+    ["#517a24", 2],
+    ["#537c26", 2]
+];
+const pipeGlareColors = [
+    ["#71883f", 2],
+    ["#6bbe29", 2],
+    ["#87dc41", 2],
+    ["#b6f169", 2],
+    ["#d8fe82", 2],
+    ["#e5ff8b", 2],
+    ["#eaff90", 2],
+    ["#e7ff8e", 28],
+    ["#e7ff8c", 2],
+    ["#edff8e", 2],
+    ["#c1f971", 2],
+    ["#9cee5e", 2],
+    ["#d2ff7d", 2],
+    ["#d9fe81", 2],
+    ["#9eed5a", 2],
+    ["#9fed5a", 2],
+    ["#9deb58", 2],
+    ["#9eec59", 6],
+    ["#9dec59", 2],
+    ["#9aec57", 2],
+    ["#9bec59", 2],
+    ["#93e451", 2],
+    ["#7dcc37", 2],
+    ["#5c9522", 2],
+    ["#527f23", 2]
+];
 
 
 class Bird {
@@ -53,7 +106,7 @@ class Bird {
         if (!game.isRunning)
             return;
         this.initialJumpPos = this.y;
-        this.jumpStartTime = performance.now();
+        this.jumpStartTime = game.time;
     }
 
     get y() {
@@ -88,9 +141,9 @@ class Pipe {
     draw() {
         const left = this.x - pipeWidth / 2;
         const bottom = this.y - (pipeGap / 2);
-        const bodyBottom = bottom - 20;
+        const bodyBottom = bottom - pipeTipHeight;
         const top = this.y + (pipeGap / 2);
-        const bodyTop = top + 20; 
+        const bodyTop = top + pipeTipHeight; 
 
         ctx.fillStyle = "#63828f";
         ctx.fillRect(left + 4, 0, 2, bodyBottom);
@@ -101,15 +154,15 @@ class Pipe {
         let x = left + 8;
         for (let stripe of pipeBodyColors) {
             ctx.fillStyle = stripe[0];
-            ctx.fillRect(x, 0, stripe[4], bodyBottom - 4);
-            ctx.fillRect(x, bodyTop + 2, stripe[4], groundY - bodyTop - 2);
-            ctx.fillStyle = stripe[1];
-            ctx.fillRect(x, bodyBottom - 4, stripe[4], 2);
-            ctx.fillStyle = stripe[2];
-            ctx.fillRect(x, bodyBottom - 2, stripe[4], 2);
-            ctx.fillStyle = stripe[3];
-            ctx.fillRect(x, bodyTop, stripe[4], 2);
-            x += stripe[4];
+            ctx.fillRect(x, 0, stripe[1] + 2, bodyBottom/* - 4*/);
+            ctx.fillRect(x, bodyTop /*+ 2*/, stripe[1] + 2, groundY - bodyTop/* - 2*/);
+            // ctx.fillStyle = stripe[1];
+            // ctx.fillRect(x, bodyBottom - 4, stripe[4] + 2, /* 2 */3);
+            // ctx.fillStyle = stripe[2];
+            // ctx.fillRect(x, bodyBottom - 2, stripe[4] + 2, /* 2 */2);
+            // ctx.fillStyle = stripe[3];
+            // ctx.fillRect(x, bodyTop, stripe[4] + 2, 2);
+            x += stripe[1];
         }
         ctx.fillStyle = "#54503a";
         ctx.fillRect(left + 78, 0, 4, bodyBottom);
@@ -120,12 +173,67 @@ class Pipe {
         ctx.fillStyle = "#69aab5";
         ctx.fillRect(left + 82, 0, 2, bodyBottom);
         ctx.fillRect(left + 82, bodyTop, 2, groundY - bodyTop);
+        
+        ctx.fillStyle = "#4f4041";
+        ctx.fillRect(left, bodyBottom, pipeWidth, pipeTipHeight);
+        ctx.fillRect(left, top, pipeWidth, pipeTipHeight);
+        ctx.globalAlpha = 0.1;
+        ctx.fillRect(left + 8, bodyBottom - 4, x - left - 8, 2);
+        ctx.fillRect(left + 8, bodyTop + 2, x - left - 8, 2);
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(left - 2, bodyBottom, pipeWidth + 4, pipeTipHeight);
+        ctx.fillRect(left, bodyBottom - 2, pipeWidth, pipeTipHeight + 4);
+        ctx.fillRect(left - 2, top, pipeWidth + 4, pipeTipHeight);
+        ctx.fillRect(left, top - 2, pipeWidth, pipeTipHeight + 4);
+        // ctx.fillRect(left + 8, bodyBottom - 2, x - left - 8, 2);
+        // ctx.fillRect(left + 8, bodyTop, x - left - 8, 2);
+        ctx.globalAlpha = 1;
+
+        x = left + 2;
+        for (let stripe of pipeTipColors) {
+            ctx.fillStyle = stripe[0];
+            ctx.fillRect(x, bodyBottom + 2, stripe[1] + 2, bottom - bodyBottom - 4);
+            ctx.fillRect(x, top + 2/*+ 2*/, stripe[1] + 2, bodyTop - top - 4/* - 2*/);
+            // ctx.fillStyle = stripe[1];
+            // ctx.fillRect(x, bodyBottom - 4, stripe[4] + 2, /* 2 */3);
+            // ctx.fillStyle = stripe[2];
+            // ctx.fillRect(x, bodyBottom - 2, stripe[4] + 2, /* 2 */2);
+            // ctx.fillStyle = stripe[3];
+            // ctx.fillRect(x, bodyTop, stripe[4] + 2, 2);
+            x += stripe[1];
+        }
+
+        x = left + 2;
+        for (let stripe of pipeGlareColors) {
+            ctx.fillStyle = stripe[0];
+            ctx.fillRect(x, bottom - 6, stripe[1] + 2, 4);
+            ctx.fillRect(x, top + 2, stripe[1] + 2, 4);
+            x += stripe[1];
+        }
 
         ctx.fillStyle = "#4f4041";
-        ctx.fillRect(left, bodyBottom, pipeWidth, 2);
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(left + 2, bodyBottom + 2, x - left/* - 2*/, 2);
+        ctx.fillRect(left + 2, bodyTop - 4, x - left/* - 2*/, 2);
+        ctx.fillRect(left + 2, bottom - 4, x - left/* - 2*/, 2);
+        ctx.fillRect(left + 2, top + 2, x - left/* - 2*/, 2);
+        ctx.globalAlpha = 0.1;
+        ctx.fillRect(left + 2, bodyBottom + 4, x - left/* - 2*/, 2);
+        ctx.fillRect(left + 2, bodyTop - 6, x - left/* - 2*/, 2);
+        ctx.fillStyle = "#ccef9f";
+        ctx.globalAlpha = 0.1;
+        ctx.fillRect(left + 2, bottom - 8, x - left/* - 2*/, 2);
+        ctx.fillRect(left + 2, top + 6, x - left/* - 2*/, 2);
+        ctx.globalAlpha = 1;
 
 
 
+        // ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        // ctx.strokeStyle = "red";
+        // ctx.fillRect(this.x - (pipeWidth / 2), 0, pipeWidth, this.y - (pipeGap / 2));
+        // ctx.strokeRect(this.x - (pipeWidth / 2), 0, pipeWidth, this.y - (pipeGap / 2));
+        // ctx.fillRect(this.x - (pipeWidth / 2), this.y + (pipeGap / 2), pipeWidth, c.height - (this.y + (pipeGap / 2)));
+        // ctx.strokeRect(this.x - (pipeWidth / 2), this.y + (pipeGap / 2), pipeWidth, c.height - (this.y + (pipeGap / 2)));
         
         // ctx.fillStyle = "#";
         // ctx.fillRect(left + 82, 0, 2, bodyBottom - 4);
@@ -208,15 +316,15 @@ const game = {
 
         // ctx.drawImage("bg.png", 0, 0);
 
-        if (spaceKeyIsPressed && !hasJumped) {
-            this.bird.jump();
-            hasJumped = true;
-        }
-
         for (let pipe of this.pipes) {
             pipe.draw();
             if (pipe.isColliding)
                 game.end();
+        }
+
+        if (spaceKeyIsPressed && !hasJumped) {
+            this.bird.jump();
+            hasJumped = true;
         }
 
         this.bird.draw();
