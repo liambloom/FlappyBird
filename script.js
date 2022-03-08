@@ -121,10 +121,58 @@ class Bird {
     }
 
     draw() {
-        ctx.fillStyle = game.isRunning ? "yellow" : "red";
+        ctx.fillStyle = "#533846";
         ctx.beginPath();
-        ctx.arc(birdX, this.y, birdRadius, 0, 2 * Math.PI);
+        ctx.moveTo(18, 0);
+        ctx.lineTo(36, 0);
+        ctx.lineTo(36, 3);
+        ctx.lineTo(39, 3);
+        ctx.lineTo(39, 6);
+        ctx.lineTo(42, 6);
+        ctx.lineTo(42, 9);
+        ctx.lineTo(45, 9);
+        ctx.lineTo(45, 18);
+        ctx.lineTo(48, 18);
+        ctx.lineTo(48, 21);
+        ctx.lineTo(51, 21);
+        ctx.lineTo(51, 24);
+        ctx.lineTo(48, 24);
+        ctx.lineTo(48, 30);
+        ctx.lineTo(45, 30);
+        ctx.lineTo(45, 33);
+        ctx.lineTo(30, 33);
+        ctx.lineTo(30, 36);
+        ctx.lineTo(15, 36);
+        ctx.lineTo(15, 33);
+        ctx.lineTo(9, 33);
+        ctx.lineTo(9, 30);
+        ctx.lineTo(6, 30);
+        ctx.lineTo(6, 24);
+        ctx.lineTo(3, 24);
+        ctx.lineTo(3, 21);
+        ctx.lineTo(0, 21);
+        ctx.lineTo(0, 12);
+        ctx.lineTo(3, 12);
+        ctx.lineTo(3, 9);
+        ctx.lineTo(9, 9);
+        ctx.lineTo(9, 6);
+        ctx.lineTo(12, 6);
+        ctx.lineTo(12, 3);
+        ctx.lineTo(18, 3);
+        ctx.closePath();
         ctx.fill();
+
+        ctx.fillStyle = "#fafce9";
+        ctx.beginPath();
+        ctx.moveTo(3, 12);
+        ctx.moveTo()
+
+
+    
+        // ctx.fillStyle = game.isRunning ? "yellow" : "red";
+        // ctx.beginPath();
+        // ctx.arc(birdX, this.y, birdRadius, 0, 2 * Math.PI);
+        // ctx.fill();
     }
 }
 
