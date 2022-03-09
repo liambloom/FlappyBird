@@ -121,6 +121,10 @@ class Bird {
     }
 
     draw() {
+        ctx.translate(-25.5, 18);
+        ctx.rotate(0);
+        ctx.translate(birdX, this.y);
+        
         ctx.fillStyle = "#533846";
         ctx.beginPath();
         ctx.moveTo(18, 0);
@@ -177,12 +181,15 @@ class Bird {
         ctx.closePath();
         ctx.fill();
 
-        ctx.fillStyle = "#f8ff30";
-        ctx.fillRect(3, 18, 3, 3);
-        ctx.fillRect(6, 21, 9, 3);
-        ctx.fillRect(15, 18, 3, 3);
-        ctx.fillRect(12, 6, 6, 3);
-        ctx.fillRect(18, 3, 9, 3);
+        ctx.fillStyle = "#f8ff2e";
+        ctx.beginPath();
+        ctx.rect(3, 18, 3, 3);
+        ctx.rect(6, 21, 9, 3);
+        ctx.rect(15, 18, 3, 3);
+        ctx.rect(12, 6, 6, 3);
+        ctx.rect(18, 3, 9, 3);
+        ctx.closePath();
+        ctx.fill();
 
         ctx.fillStyle = "#f9f124";
         ctx.beginPath();
@@ -209,9 +216,63 @@ class Bird {
         ctx.closePath();
         ctx.fill();
 
+        ctx.fillStyle = "#f9c22c";
+        ctx.beginPath();
+        ctx.moveTo(15, 24);
+        ctx.lineTo(24, 24);
+        ctx.lineTo(24, 27);
+        ctx.lineTo(27, 27);
+        ctx.lineTo(27, 30);
+        ctx.lineTo(30, 30);
+        ctx.lineTo(30, 33);
+        ctx.lineTo(15, 33);
+        ctx.lineTo(15, 30);
+        ctx.lineTo(9, 30);
+        ctx.lineTo(9, 27);
+        ctx.lineTo(15, 27);
+        ctx.closePath();
+        ctx.fill();
 
+        ctx.fillStyle = "#f5f1f1";
+        ctx.beginPath();
+        ctx.rect(27, 9, 3, 6);
+        ctx.rect(30, 15, 3, 3);
+        ctx.closePath();
+        ctx.fill();
 
-    
+        ctx.fillStyle = "#fdfffa";
+        ctx.beginPath();
+        ctx.moveTo(30, 3);
+        ctx.lineTo(36, 3);
+        ctx.lineTo(36, 6);
+        ctx.lineTo(39, 6);
+        ctx.lineTo(39, 9);
+        ctx.lineTo(36, 9);
+        ctx.lineTo(36, 15);
+        ctx.lineTo(39, 15);
+        ctx.lineTo(39, 9);
+        ctx.lineTo(42, 9);
+        ctx.lineTo(42, 18);
+        ctx.lineTo(33, 18);
+        ctx.lineTo(33, 15);
+        ctx.lineTo(30, 15);
+        ctx.lineTo(30, 9);
+        ctx.lineTo(27, 9);
+        ctx.lineTo(27, 6);
+        ctx.lineTo(30, 6);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#fd684b";
+        ctx.beginPath();
+        ctx.rect(30, 21, 18, 3);
+        ctx.rect(27, 24, 3, 3);
+        ctx.rect(30, 27, 15, 3);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
         // ctx.fillStyle = game.isRunning ? "yellow" : "red";
         // ctx.beginPath();
         // ctx.arc(birdX, this.y, birdRadius, 0, 2 * Math.PI);
@@ -221,7 +282,7 @@ class Bird {
 
 class Pipe {
     constructor() {
-        this.y = Math.floor(Math.random() * (groundY - pipeGap - 50)) + 25 + pipeGap / 2;
+        this.y = Math.floor(Math.random() * (groundY - pipeGap - 2 * pipeTipHeight - 50)) + 25 + pipeGap / 2 + pipeTipHeight;
         this.spawnTime = performance.now();
     }
 
