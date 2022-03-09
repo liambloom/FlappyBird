@@ -165,7 +165,50 @@ class Bird {
         ctx.fillStyle = "#fafce9";
         ctx.beginPath();
         ctx.moveTo(3, 12);
-        ctx.moveTo()
+        ctx.lineTo(15, 12);
+        ctx.lineTo(15, 15);
+        ctx.lineTo(18, 15);
+        ctx.lineTo(18, 18);
+        ctx.lineTo(15, 18);
+        ctx.lineTo(15, 21);
+        ctx.lineTo(6, 21);
+        ctx.lineTo(6, 18);
+        ctx.lineTo(3, 18);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#f8ff30";
+        ctx.fillRect(3, 18, 3, 3);
+        ctx.fillRect(6, 21, 9, 3);
+        ctx.fillRect(15, 18, 3, 3);
+        ctx.fillRect(12, 6, 6, 3);
+        ctx.fillRect(18, 3, 9, 3);
+
+        ctx.fillStyle = "#f9f124";
+        ctx.beginPath();
+        ctx.moveTo(15, 9);
+        ctx.lineTo(18, 9);
+        ctx.lineTo(18, 6);
+        ctx.lineTo(24, 6);
+        ctx.lineTo(24, 15);
+        ctx.lineTo(27, 15);
+        ctx.lineTo(27, 18);
+        ctx.lineTo(30, 18);
+        ctx.lineTo(30, 21);
+        ctx.lineTo(27, 21);
+        ctx.lineTo(27, 24);
+        ctx.lineTo(18, 24);
+        ctx.lineTo(18, 21);
+        ctx.lineTo(21, 21);
+        ctx.lineTo(21, 15);
+        ctx.lineTo(18, 15);
+        ctx.lineTo(18, 12);
+        ctx.lineTo(15, 12);
+        ctx.lineTo(15, 9);
+        ctx.lineTo(18, 9);
+        ctx.closePath();
+        ctx.fill();
+
 
 
     
