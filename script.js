@@ -5,10 +5,12 @@ const ctx = c.getContext("2d");
 c.width = 450;
 c.height = 800;
 
-const jumpInitialVelocity = -0.9;
-const gravity = 0.004;
+const jumpInitialVelocity = -0.8;
+const gravity = 0.0035;
 const birdRadius = 20;
-const birdX = (c.width - birdRadius) / 2;
+const birdWidth = 51;
+const birdHeight = 36;
+const birdX = (c.width - birdWidth) / 2;
 const pipeSpeed = -0.2;
 const pipeWidth = 86;
 const pipeGap = 147;
@@ -121,9 +123,38 @@ class Bird {
     }
 
     draw() {
-        ctx.translate(-25.5, 18);
-        ctx.rotate(0);
-        ctx.translate(birdX, this.y);
+        const rotationAngle = -0.43;
+        // ctx.rotate(rotationAngle);
+        // const dx0 = birdX - birdWidth / 2;
+        // const dy0 = this.y -  birdHeight / 2;
+        // const hypotenuse = Math.sqrt(Math.pow(dx0, 2), Math.pow(dy0, 2));
+        // const angle0 = Math.atan(dx0 / dy0);
+        // const angle1 = rotationAngle - angle0;
+        // const dx1 = hypotenuse * Math.sin(angle1);
+        // const dy1 = hypotenuse * Math.cos(angle1);
+        // ctx.translate(dx1 + birdWidth / 2, dy1 + birdHeight / 2);
+
+        // const rotationMatrix = ctx.getTransform();
+        // const x1 = rotationMatrix.a * x0 + rotationMatrix.c * y0;
+        // const y1 = rotationMatrix.b * x0 + rotationMatrix.d * y0;
+        // const dx = birdX - x1;
+        // const dy = this.initialJumpPos - y1;
+        // ctx.translate(-(rotationMatrix.a * dx + rotationMatrix.c * dy), rotationMatrix.b * dx + rotationMatrix.d * dy);
+
+        const x = birdX - birdWidth / 2;
+        const y = this.y - birdHeight / 2;
+        ctx.translate(x + birdWidth / 2, y + birdHeight / 2);
+        ctx.rotate(rotationAngle);
+        ctx.translate(-x - birdWidth / 2, -y - birdHeight / 2);
+        ctx.translate(x, y);
+        // const angle0 = Math.atan(x0 / y0);
+        // const angle1 = rotationAngle - angle0;
+        // const hypotenuse = Math.sqrt(x0 * x0 + y0 * y0);
+        // const x1 = hypotenuse * Math.sin(angle1);
+        // const y1 = hypotenuse * Math.cos(angle1);
+        // ctx.translate(0, 100);
+        
+
         
         ctx.fillStyle = "#533846";
         ctx.beginPath();
@@ -270,13 +301,29 @@ class Bird {
         ctx.rect(30, 27, 15, 3);
         ctx.closePath();
         ctx.fill();
-        
+
         ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-        // ctx.fillStyle = game.isRunning ? "yellow" : "red";
+        // ctx.fillStyle = 'gray';
+        // ctx.fillRect(80, 60, 140, 30);
+
+        // // Matrix transformation
+        // ctx.translate(150, 75);
+        // ctx.rotate(0.43);
+        // ctx.translate(-150, -75);
+
+        // // Rotated rectangle
+        // ctx.fillStyle = 'red';
+        // ctx.fillRect(80, 60, 140, 30);
+
+        // ctx.fillStyle = ctx.strokeStyle = game.isRunning ? "green" : "red";
         // ctx.beginPath();
         // ctx.arc(birdX, this.y, birdRadius, 0, 2 * Math.PI);
+        // ctx.closePath();
+        // ctx.stroke();
+        // ctx.globalAlpha = 0.3;
         // ctx.fill();
+        // ctx.globalAlpha = 1;
     }
 }
 
