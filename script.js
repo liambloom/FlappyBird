@@ -5,8 +5,8 @@ const ctx = c.getContext("2d");
 c.width = 450;
 c.height = 800;
 
-const jumpInitialVelocity = -0.8;
-const gravity = 0.0035;
+const jumpInitialVelocity = -0.7;
+const gravity = 0.003;
 const birdRadius = 20;
 const birdWidth = 51;
 const birdHeight = 36;
@@ -17,8 +17,50 @@ const pipeGap = 147;
 const bottomDiagonalWidth = 10;
 const groundY = 624;
 const pipeTipHeight = 38;
+const upwardRotationAngle = -0.43;
+const pipeTimeGap = 1300;
+const showHitboxesString = new URLSearchParams(location.search).get("showHitboxes");
+let showHitboxes = false;
+if (showHitboxesString === "true")
+    showHitboxes = true;
+else if (showHitboxesString !== "false" && showHitboxesString !== null)
+    alert("Warning: Unrecognized value for 'showHitboxes'");
+// const showHitboxes =  === "true";
 let spaceKeyIsPressed = false;
 let hasJumped = false;
+
+const gameStates = {
+    /***
+     * The game has not started. The bird is going up and down in a sine wave
+     */
+    preGame: Symbol("preGame"),
+
+    /**
+     * The game is currently running
+     */
+    running: Symbol("running"),
+
+    /**
+     * The bird has died, but not yet hit the ground. The background and pipes are stationary, 
+     * the restart menu appears. The only thing still happening is the bird falling to the ground.
+     */
+    dead: Symbol("dead"),
+
+    /**
+     * The game is over and the bird has hit the ground. No animation is playing.
+     */
+    over: Symbol("over")
+};
+// TODO:  Replace Bird#isStopped, game.isRunning
+/*
+Conversion Map
+|   New   | game.isRunning | Bird#isStopped |
+| :-----: | :------------: | :------------: |
+| preGame |      N/A       |      N/A       |
+| running |     true       |     false      |
+|    dead |     false      |     false      |
+|    over |     false      |     true       | 
+*/
 
 const pipeBodyColors = [
     ["#81a94f", 2],
@@ -116,14 +158,18 @@ class Bird {
         const y = this.initialJumpPos + jumpInitialVelocity * t + gravity * t * t / 2;
         this.isStopped = y > groundY;
         // console.log(y);
-        if (y < 0 || this.isStopped)
+        if (y < 0 || this.isStopped) // TODO: The game does not kill you if you hit the top. There is an invisable wall a bit above the top.
             game.end();
 
         return this.isStopped ? groundY : y;
     }
 
     draw() {
-        const rotationAngle = -0.43;
+        let rotationAngle;
+        if (this.y >= this.initialJumpPos)
+            rotationAngle = Math.atan((this.y - this.initialJumpPos) / 150 + Math.tan(upwardRotationAngle));
+        else
+            rotationAngle = upwardRotationAngle;
         // ctx.rotate(rotationAngle);
         // const dx0 = birdX - birdWidth / 2;
         // const dy0 = this.y -  birdHeight / 2;
@@ -316,14 +362,16 @@ class Bird {
         // ctx.fillStyle = 'red';
         // ctx.fillRect(80, 60, 140, 30);
 
-        // ctx.fillStyle = ctx.strokeStyle = game.isRunning ? "green" : "red";
-        // ctx.beginPath();
-        // ctx.arc(birdX, this.y, birdRadius, 0, 2 * Math.PI);
-        // ctx.closePath();
-        // ctx.stroke();
-        // ctx.globalAlpha = 0.3;
-        // ctx.fill();
-        // ctx.globalAlpha = 1;
+        if (showHitboxes) {
+            ctx.fillStyle = ctx.strokeStyle = game.isRunning ? "yellow" : "red";
+            ctx.beginPath();
+            ctx.arc(birdX, this.y, birdRadius, 0, 2 * Math.PI);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.globalAlpha = 0.3;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
     }
 }
 
@@ -423,8 +471,23 @@ class Pipe {
         ctx.globalAlpha = 0.1;
         ctx.fillRect(left + 2, bottom - 8, x - left/* - 2*/, 2);
         ctx.fillRect(left + 2, top + 6, x - left/* - 2*/, 2);
-        ctx.globalAlpha = 1;
 
+        if (showHitboxes) {
+            ctx.fillStyle = ctx.strokeStyle = "green";// game.isRunning ? "yellow" : "red";
+            ctx.beginPath();
+            ctx.rect(this.x - pipeWidth / 2, 0, pipeWidth, this.y - pipeGap / 2);
+            // console.log("hitbox height: %s", c.height - this.y - pipeGap / 2);
+            ctx.rect(this.x - pipeWidth / 2, this.y + pipeGap / 2, pipeWidth, c.height - this.y - pipeGap / 2);
+            // ctx.arc(birdX, this.y, birdRadius, 0, 2 * Math.PI);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.globalAlpha = 0.3;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+
+
+        ctx.globalAlpha = 1;
 
 
         // ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
@@ -461,7 +524,7 @@ const game = {
         this.frameId = requestAnimationFrame(this.frame);
         this.pipeCreator = setInterval(() => {
             this.pipes.push(new Pipe());
-        }, 1000);
+        }, pipeTimeGap);
     },
 
     frame(time) {
@@ -530,11 +593,12 @@ const game = {
 
         if (!this.bird.isStopped)
             this.frameId = requestAnimationFrame(this.frame);
+        else
+            clearInterval(this.pipeCreator);
     },
 
     end() {
         this.isRunning = false;
-        clearInterval(this.pipeCreator);
     }
 };
 game.frame = game.frame.bind(game);
