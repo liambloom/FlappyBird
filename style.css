@@ -9,3 +9,8 @@ html, body, canvas {
     left: 50vw;
     transform: translate(-50%, -50%);
 }
+
+@font-face {
+    font-family: Dustfine;
+    src: url(./Dustfine.ttf);
+}

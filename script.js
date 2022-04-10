@@ -19,6 +19,7 @@ const groundY = 624;
 const pipeTipHeight = 38;
 const upwardRotationAngle = -0.43;
 const pipeTimeGap = 1300;
+const scoreY = 100;
 const showHitboxesString = new URLSearchParams(location.search).get("showHitboxes");
 let showHitboxes = false;
 if (showHitboxesString === "true")
@@ -51,16 +52,6 @@ const gameStates = {
      */
     over: Symbol("over")
 };
-// TODO:  Replace Bird#isStopped, game.isRunning
-/*
-Conversion Map
-|   New   | game.isRunning | Bird#isStopped |
-| :-----: | :------------: | :------------: |
-| preGame |      N/A       |      N/A       |
-| running |     true       |     false      |
-|    dead |     false      |     false      |
-|    over |     false      |     true       | 
-*/
 
 const pipeBodyColors = [
     ["#81a94f", 2],
@@ -142,34 +133,46 @@ class Bird {
     constructor() {
         this.initialJumpPos = c.height / 2;
         this.jumpStartTime = performance.now();
-        this.isStopped = false;
-        // this.jump();
     }
 
     jump() {
-        if (!game.isRunning)
-            return;
-        this.initialJumpPos = this.y;
-        this.jumpStartTime = game.time;
+        if (game.state == gameStates.running || game.state == gameStates.preGame) {
+            this.initialJumpPos = this.y;
+            this.jumpStartTime = game.time;
+            if (game.state == gameStates.preGame) {
+                game.state = gameStates.running;
+                this.pipeCreator = setInterval(() => {
+                    game.pipes.push(new Pipe());
+                }, pipeTimeGap);
+            }
+        }
     }
 
     get y() {
         const t = game.time - this.jumpStartTime;
         const y = this.initialJumpPos + jumpInitialVelocity * t + gravity * t * t / 2;
-        this.isStopped = y > groundY;
-        // console.log(y);
-        if (y < 0 || this.isStopped) // TODO: The game does not kill you if you hit the top. There is an invisable wall a bit above the top.
-            game.end();
+        if (game.state == gameStates.preGame) 
+            return c.height / 2 + 20 * Math.sin(game.time * Math.PI / 375);
+        else if (y > groundY) {// jshint ignore:line
+            game.state = gameStates.over;
+            return groundY;
+        }
+        else if (y < 0) // TODO: The game does not kill you if you hit the top. There is an invisable wall a bit above the top.
+            game.state = gameStates.dead;
 
-        return this.isStopped ? groundY : y;
+        return y;
     }
 
     draw() {
         let rotationAngle;
-        if (this.y >= this.initialJumpPos)
-            rotationAngle = Math.atan((this.y - this.initialJumpPos) / 150 + Math.tan(upwardRotationAngle));
-        else
-            rotationAngle = upwardRotationAngle;
+        if (game.state == gameStates.preGame)
+            rotationAngle = 0;
+        else {
+            if (this.y >= this.initialJumpPos)
+                rotationAngle = Math.atan((this.y - this.initialJumpPos) / 150 + Math.tan(upwardRotationAngle));
+            else
+                rotationAngle = upwardRotationAngle;
+        }
         // ctx.rotate(rotationAngle);
         // const dx0 = birdX - birdWidth / 2;
         // const dy0 = this.y -  birdHeight / 2;
@@ -363,7 +366,7 @@ class Bird {
         // ctx.fillRect(80, 60, 140, 30);
 
         if (showHitboxes) {
-            ctx.fillStyle = ctx.strokeStyle = game.isRunning ? "yellow" : "red";
+            ctx.fillStyle = ctx.strokeStyle = (game.state == gameStates.preGame || game.state == gameStates.running) ? "yellow" : "red";
             ctx.beginPath();
             ctx.arc(birdX, this.y, birdRadius, 0, 2 * Math.PI);
             ctx.closePath();
@@ -379,6 +382,7 @@ class Pipe {
     constructor() {
         this.y = Math.floor(Math.random() * (groundY - pipeGap - 2 * pipeTipHeight - 50)) + 25 + pipeGap / 2 + pipeTipHeight;
         this.spawnTime = performance.now();
+        this.pointHasBeenAwarded = false;
     }
 
     get x() {
@@ -513,18 +517,27 @@ class Pipe {
         return this.x - (pipeWidth / 2) <= birdX + birdRadius && this.x + (pipeWidth / 2) >= birdX - birdRadius
             && (this.y - (pipeGap / 2) >= game.bird.y - birdRadius || this.y + (pipeGap / 2) <= game.bird.y + birdRadius);
     }
+
+    get isOffScreen() {
+        return this.x + pipeWidth / 2 < 0;
+    }
+
+    get addPoint() {
+        const r = !this.pointHasBeenAwarded && this.x < birdX;
+        if (r)
+            this.pointHasBeenAwarded = true;
+        return r;
+    }
 }
 
 const game = {
-    isRunning: true,
+    state: gameStates.preGame,
+    score: 0,
     pipes: [],
 
     start() {
         this.bird = new Bird();
         this.frameId = requestAnimationFrame(this.frame);
-        this.pipeCreator = setInterval(() => {
-            this.pipes.push(new Pipe());
-        }, pipeTimeGap);
     },
 
     frame(time) {
@@ -574,15 +587,31 @@ const game = {
         // Bottom
         ctx.fillStyle = "#ddd894";
         ctx.fillRect(0, 647, c.width, c.height - 647);
-        
 
-        // ctx.drawImage("bg.png", 0, 0);
-
-        for (let pipe of this.pipes) {
+        for (let i = 0; i < this.pipes.length; i++) {
+            const pipe = this.pipes[i];
             pipe.draw();
-            if (pipe.isColliding)
-                game.end();
+            if (pipe.isOffScreen)
+                this.pipes.splice(i--, 1);
+            else if (pipe.isColliding)
+                game.state = gameStates.dead;
+            else if (pipe.addPoint && this.state == gameStates.running)
+                this.score++;
         }
+
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        ctx.font = "64px Dustfine";
+        if (document.fonts.check(ctx.font)) {
+            const scoreX = (c.width - ctx.measureText(this.score).width) / 2;
+            ctx.fillText(this.score, scoreX, scoreY);
+            ctx.strokeText(this.score, scoreX, scoreY);
+        }
+        else 
+            document.fonts.load(ctx.font);
+        
+        ctx.lineWidth = 1;
 
         if (spaceKeyIsPressed && !hasJumped) {
             this.bird.jump();
@@ -591,15 +620,11 @@ const game = {
 
         this.bird.draw();
 
-        if (!this.bird.isStopped)
+        if (game.state != gameStates.over)
             this.frameId = requestAnimationFrame(this.frame);
         else
             clearInterval(this.pipeCreator);
     },
-
-    end() {
-        this.isRunning = false;
-    }
 };
 game.frame = game.frame.bind(game);
 
